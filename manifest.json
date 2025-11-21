@@ -1,0 +1,55 @@
+{
+  "manifest_version": 3,
+  "name": "Search Shortcuts",
+  "version": "1.0.0",
+  "description": "Search selected text using keyboard shortcuts or context menu",
+  "permissions": [
+    "storage",
+    "tabs",
+    "contextMenus",
+    "activeTab",
+    "scripting"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "options_page": "options.html",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "commands": {
+    "search-1": {
+      "suggested_key": {
+        "default": "Alt+Shift+1"
+      },
+      "description": "Search with engine 1"
+    },
+    "search-2": {
+      "suggested_key": {
+        "default": "Alt+Shift+2"
+      },
+      "description": "Search with engine 2"
+    },
+    "search-3": {
+      "suggested_key": {
+        "default": "Alt+Shift+3"
+      },
+      "description": "Search with engine 3"
+    },
+    "search-4": {
+      "suggested_key": {
+        "default": "Alt+Shift+4"
+      },
+      "description": "Search with engine 4"
+    }
+  }
+}

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Search Shortcuts - Settings</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Search Shortcuts Settings</h1>
+      <p class="subtitle">Manage your search engines and keyboard shortcuts</p>
+    </header>
+
+    <section class="global-settings">
+      <h2>Global Settings</h2>
+      <div class="setting-item">
+        <label>
+          <input type="radio" name="openMode" value="tab" id="openInTab" checked>
+          <span>Open in new tab</span>
+        </label>
+        <label>
+          <input type="radio" name="openMode" value="window" id="openInWindow">
+          <span>Open in new window</span>
+        </label>
+      </div>
+    </section>
+
+    <section class="search-engines">
+      <div class="section-header">
+        <h2>Search Engines</h2>
+        <button id="addEngineBtn" class="btn btn-primary">+ Add Search Engine</button>
+      </div>
+
+      <div id="enginesList" class="engines-list">
+        <!-- Search engines will be dynamically added here -->
+      </div>
+    </section>
+
+    <section class="import-export">
+      <h2>Import / Export Settings</h2>
+      <div class="button-group">
+        <button id="exportBtn" class="btn btn-secondary">Export Settings</button>
+        <button id="importBtn" class="btn btn-secondary">Import Settings</button>
+        <input type="file" id="importFile" accept=".json" class="hidden-file-input">
+      </div>
+    </section>
+
+    <div id="engineModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="modalTitle">Add Search Engine</h3>
+          <button class="modal-close" id="modalClose">&times;</button>
+        </div>
+        <div class="modal-body">
+          <form id="engineForm">
+            <div class="form-group">
+              <label for="engineName">Name</label>
+              <input type="text" id="engineName" required placeholder="e.g., YouTube">
+            </div>
+            <div class="form-group">
+              <label for="engineUrl">URL (use %s for query)</label>
+              <input type="text" id="engineUrl" required placeholder="https://www.youtube.com/results?search_query=%s">
+            </div>
+            <div class="form-group">
+              <label>Keyboard Shortcut</label>
+              <div id="shortcutInfo" class="shortcut-info">
+                <p class="shortcut-mapping"></p>
+                <small class="help-text shortcut-note">Shortcuts are fixed: Alt+Shift+1, Alt+Shift+2, Alt+Shift+3, Alt+Shift+4 map to the first 4 engines (by order).</small>
+                <small class="help-text shortcut-note">To customize shortcuts, go to <a href="#" id="shortcutsLink">chrome://extensions/shortcuts</a></small>
+              </div>
+            </div>
+            <div class="form-group checkbox-group">
+              <label>
+                <input type="checkbox" id="showInContextMenu" checked>
+                <span>Show in context menu</span>
+              </label>
+            </div>
+            <div class="form-actions">
+              <button type="button" id="cancelBtn" class="btn btn-secondary">Cancel</button>
+              <button type="submit" class="btn btn-primary">Save</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+  </div>
+
+  <script src="storage.js"></script>
+  <script src="options.js"></script>
+</body>
+</html>

@@ -43,6 +43,7 @@ next-env.d.ts
 
 # tools
 /_tools
+/tools
 
 # ansible
 *.retry
