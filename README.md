@@ -1,0 +1,1 @@
+# Search Shortcuts Chrome Extension
