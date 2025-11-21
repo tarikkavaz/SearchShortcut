@@ -4,10 +4,12 @@ A Chrome extension that allows you to quickly search selected text using keyboar
 
 ## Features
 
-- **Keyboard Shortcuts**: Select text and press a customizable shortcut to search with your preferred engine
+- **Keyboard Shortcuts**: Select text and press a fixed shortcut (Alt+Shift+1-4) to search with your preferred engine
 - **Context Menu**: Right-click on selected text and choose a search engine from the menu
 - **Customizable Search Engines**: Add, edit, and remove search engines with custom URLs
-- **Drag & Drop Reordering**: Reorder search engines for the context menu
+- **Separators**: Add visual separators in the context menu to organize your search engines
+- **Drag & Drop Reordering**: Reorder search engines with visual insertion indicators showing where items will land
+- **Dark Mode**: Automatic dark/light mode that respects your system preferences, with manual toggle
 - **Import/Export Settings**: Backup and restore your configuration
 - **Cross-Platform**: Automatically adapts keyboard shortcuts for Mac and Windows/Linux
 
@@ -23,8 +25,9 @@ A Chrome extension that allows you to quickly search selected text using keyboar
 ### Keyboard Shortcuts
 
 1. Select text on any webpage
-2. Press your configured keyboard shortcut (e.g., `Shift+Alt+1` for the first search engine)
+2. Press `Alt+Shift+1` through `Alt+Shift+4` to search with the first 4 search engines (based on their order)
 3. A new tab/window will open with the search results
+4. The shortcuts map to the first 4 non-separator search engines by their order in the list
 
 ### Context Menu
 
@@ -39,18 +42,20 @@ A Chrome extension that allows you to quickly search selected text using keyboar
 
 #### Managing Search Engines
 
-- **Add**: Click "Add Search Engine" and fill in the name, URL (with `%s` placeholder), and optional shortcut
-- **Edit**: Click "Edit" on any search engine
-- **Delete**: Click "Delete" on any search engine
-- **Reorder**: Drag and drop search engines to reorder them
-- **Context Menu**: Toggle "Show in menu" to control which engines appear in the context menu
+- **Add**: Click "Add Search Engine" and fill in the name, URL (with `%s` placeholder)
+- **Add Separator**: Click "Add Separator" to add a visual separator in the context menu
+- **Edit**: Click "Edit" on any search engine (separators cannot be edited)
+- **Delete**: Click "Delete" on any search engine or separator
+- **Reorder**: Drag and drop search engines to reorder them - a blue line shows where the item will be inserted
+- **Context Menu**: Toggle "Show in menu" to control which engines appear in the context menu (separators are always visible)
 
 #### Keyboard Shortcuts
 
-- Shortcuts use the format: `Modifier+Modifier+Key`
-- Modifiers: `Shift`, `Alt` (Option on Mac), `Ctrl` (Command on Mac)
-- Keys: Numbers (1-9) or letters
-- Example: `Shift+Alt+1` or `Shift+Option+1` (Mac)
+- Shortcuts are fixed: `Alt+Shift+1`, `Alt+Shift+2`, `Alt+Shift+3`, `Alt+Shift+4`
+- These map to the first 4 search engines (excluding separators) based on their order
+- Reorder engines to change which engine each shortcut triggers
+- Only the first 4 engines have shortcuts (Chrome extension limitation)
+- To customize shortcuts beyond reordering, go to `chrome://extensions/shortcuts`
 
 #### Import/Export
 
@@ -71,8 +76,9 @@ The extension comes with these default search engines (all editable and removabl
 
 - Built with Chrome Extension Manifest V3
 - Uses Chrome Storage API for persistence
-- Supports up to 4 keyboard shortcuts (Chrome limitation - only first 4 search engines can have shortcuts)
+- Supports up to 4 keyboard shortcuts (Chrome limitation - only first 4 non-separator search engines can have shortcuts)
 - Unlimited search engines via context menu
+- Dark mode support with system preference detection
 - Cross-platform modifier key detection
 
 ## File Structure
