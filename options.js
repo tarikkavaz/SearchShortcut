@@ -65,28 +65,47 @@ function renderEngines() {
     return;
   }
 
-  // Sort engines by order for display
-  const sortedEngines = [...searchEngines].sort((a, b) => (a.order || 0) - (b.order || 0));
+  // Sort items by order for display
+  const sortedItems = [...searchEngines].sort((a, b) => (a.order || 0) - (b.order || 0));
   const mods = getModifierNames();
+  
+  // Count non-separator items for shortcut badges
+  let engineIndex = 0;
 
-  enginesList.innerHTML = sortedEngines.map((engine, index) => {
-    return `
-      <div class="engine-item" data-id="${engine.id}" draggable="true">
-        <div class="drag-handle">☰</div>
-        <div class="engine-info">
-          <div class="engine-name">${escapeHtml(engine.name)}${index < 4 ? ` <span class="shortcut-badge">${mods.alt}+Shift+${index + 1}</span>` : ' <span class="no-shortcut-label">(no shortcut)</span>'}</div>
-          <div class="engine-url">${escapeHtml(engine.url)}</div>
+  enginesList.innerHTML = sortedItems.map((item) => {
+    if (item.type === 'separator') {
+      return `
+        <div class="engine-item separator-item" data-id="${item.id}" draggable="true">
+          <div class="drag-handle">☰</div>
+          <div class="engine-info">
+            <div class="engine-name separator-name">━━━ Separator ━━━</div>
+          </div>
+          <div class="engine-actions">
+            <button class="btn btn-danger delete-engine-btn" data-engine-id="${item.id}">Delete</button>
+          </div>
         </div>
-        <div class="engine-actions">
-          <label>
-            <input type="checkbox" class="context-menu-toggle" data-engine-id="${engine.id}" ${engine.showInContextMenu ? 'checked' : ''}>
-            <span>Show in menu</span>
-          </label>
-          <button class="btn btn-secondary edit-engine-btn" data-engine-id="${engine.id}">Edit</button>
-          <button class="btn btn-danger delete-engine-btn" data-engine-id="${engine.id}">Delete</button>
+      `;
+    } else {
+      const shortcutBadge = engineIndex < 4 ? ` <span class="shortcut-badge">${mods.alt}+Shift+${engineIndex + 1}</span>` : ' <span class="no-shortcut-label">(no shortcut)</span>';
+      engineIndex++;
+      return `
+        <div class="engine-item" data-id="${item.id}" draggable="true">
+          <div class="drag-handle">☰</div>
+          <div class="engine-info">
+            <div class="engine-name">${escapeHtml(item.name)}${shortcutBadge}</div>
+            <div class="engine-url">${escapeHtml(item.url)}</div>
+          </div>
+          <div class="engine-actions">
+            <label>
+              <input type="checkbox" class="context-menu-toggle" data-engine-id="${item.id}" ${item.showInContextMenu !== false ? 'checked' : ''}>
+              <span>Show in menu</span>
+            </label>
+            <button class="btn btn-secondary edit-engine-btn" data-engine-id="${item.id}">Edit</button>
+            <button class="btn btn-danger delete-engine-btn" data-engine-id="${item.id}">Delete</button>
+          </div>
         </div>
-      </div>
-    `;
+      `;
+    }
   }).join('');
 
   // Attach drag and drop handlers
@@ -208,7 +227,7 @@ function attachEngineEventListeners() {
 // Toggle context menu visibility
 async function toggleContextMenu(engineId, show) {
   const engine = searchEngines.find(e => e.id === engineId);
-  if (engine) {
+  if (engine && engine.type !== 'separator') {
     engine.showInContextMenu = show;
     await saveEngines();
   }
@@ -216,8 +235,10 @@ async function toggleContextMenu(engineId, show) {
 
 // Get shortcut mapping for an engine
 function getShortcutMapping(engineId) {
-  const sortedEngines = [...searchEngines].sort((a, b) => (a.order || 0) - (b.order || 0));
-  const index = sortedEngines.findIndex(e => e.id === engineId);
+  const sortedItems = [...searchEngines].sort((a, b) => (a.order || 0) - (b.order || 0));
+  // Filter out separators to get engine index
+  const enginesOnly = sortedItems.filter(e => e.type !== 'separator');
+  const index = enginesOnly.findIndex(e => e.id === engineId);
   
   if (index >= 0 && index < 4) {
     const mods = getModifierNames();
@@ -233,10 +254,11 @@ function updateShortcutMapping(engineId) {
   
   if (!engineId) {
     // New engine - check if it will be in first 4
-    const sortedEngines = [...searchEngines].sort((a, b) => (a.order || 0) - (b.order || 0));
-    if (sortedEngines.length < 4) {
+    const sortedItems = [...searchEngines].sort((a, b) => (a.order || 0) - (b.order || 0));
+    const enginesOnly = sortedItems.filter(e => e.type !== 'separator');
+    if (enginesOnly.length < 4) {
       const mods = getModifierNames();
-      const nextIndex = sortedEngines.length;
+      const nextIndex = enginesOnly.length;
       if (shortcutMapping) {
         shortcutMapping.textContent = `Will be mapped to: ${mods.alt}+Shift+${nextIndex + 1}`;
       }
@@ -274,12 +296,17 @@ function updateShortcutMapping(engineId) {
 
 // Open modal to add/edit engine
 function openModal(engine = null) {
+  // Don't open modal for separators
+  if (engine && engine.type === 'separator') {
+    return;
+  }
+  
   editingEngineId = engine ? engine.id : null;
   modalTitle.textContent = engine ? 'Edit Search Engine' : 'Add Search Engine';
   
   if (engine) {
     document.getElementById('engineName').value = engine.name;
-    document.getElementById('engineUrl').value = engine.url;
+    document.getElementById('engineUrl').value = engine.url || '';
     document.getElementById('showInContextMenu').checked = engine.showInContextMenu !== false;
   } else {
     engineForm.reset();
@@ -306,15 +333,19 @@ async function saveEngine(engineData) {
     if (index !== -1) {
       searchEngines[index] = {
         ...searchEngines[index],
-        ...engineData
+        ...engineData,
+        type: 'search' // Ensure type is set
       };
     }
   } else {
     // Add new
+    const sortedItems = [...searchEngines].sort((a, b) => (a.order || 0) - (b.order || 0));
+    const maxOrder = sortedItems.length > 0 ? Math.max(...sortedItems.map(i => i.order || 0)) : -1;
     const newEngine = {
       id: generateId(),
+      type: 'search',
       ...engineData,
-      order: searchEngines.length
+      order: maxOrder + 1
     };
     searchEngines.push(newEngine);
   }
@@ -412,7 +443,30 @@ async function saveGlobalSettings() {
   showToast('Global settings saved');
 }
 
+// Add separator
+async function addSeparator() {
+  const sortedItems = [...searchEngines].sort((a, b) => (a.order || 0) - (b.order || 0));
+  const maxOrder = sortedItems.length > 0 ? Math.max(...sortedItems.map(i => i.order || 0)) : -1;
+  
+  const separator = {
+    id: generateId(),
+    type: 'separator',
+    name: 'Separator',
+    order: maxOrder + 1,
+    showInContextMenu: true
+  };
+  
+  searchEngines.push(separator);
+  await saveEngines();
+  showToast('Separator added');
+}
+
 // Event listeners
+const addSeparatorBtn = document.getElementById('addSeparatorBtn');
+if (addSeparatorBtn) {
+  addSeparatorBtn.addEventListener('click', addSeparator);
+}
+
 addEngineBtn.addEventListener('click', () => openModal());
 modalClose.addEventListener('click', closeModal);
 cancelBtn.addEventListener('click', closeModal);

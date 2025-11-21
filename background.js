@@ -98,11 +98,20 @@ async function buildContextMenu() {
     await new Promise(resolve => setTimeout(resolve, 100));
     
     const searchEngines = await getSearchEngines();
-    const visibleEngines = searchEngines
-      .filter(engine => engine.showInContextMenu)
+    const sortedItems = searchEngines
       .sort((a, b) => (a.order || 0) - (b.order || 0));
     
-    if (visibleEngines.length === 0) {
+    // Filter visible items (engines with showInContextMenu=true, or separators which are always visible)
+    const visibleItems = sortedItems.filter(item => {
+      // Separators are always visible
+      if (item.type === 'separator') {
+        return true;
+      }
+      // Regular search engines need showInContextMenu to be true
+      return item.showInContextMenu !== false;
+    });
+    
+    if (visibleItems.length === 0) {
       isBuildingContextMenu = false;
       return;
     }
@@ -114,17 +123,31 @@ async function buildContextMenu() {
       contexts: ['selection']
     });
     
-    // Add each search engine as a submenu item
-    for (const engine of visibleEngines) {
-      await createContextMenuItem({
-        id: `search-engine-${engine.id}`,
-        parentId: 'search-shortcuts-parent',
-        title: engine.name,
-        contexts: ['selection']
-      });
+    // Add each item (engine or separator)
+    for (const item of visibleItems) {
+      if (item.type === 'separator') {
+        // Create separator in context menu
+        try {
+          await createContextMenuItem({
+            id: `separator-${item.id}`,
+            parentId: 'search-shortcuts-parent',
+            type: 'separator',
+            contexts: ['selection']
+          });
+        } catch (error) {
+          console.error('Error creating separator:', error);
+        }
+      } else {
+        await createContextMenuItem({
+          id: `search-engine-${item.id}`,
+          parentId: 'search-shortcuts-parent',
+          title: item.name,
+          contexts: ['selection']
+        });
+      }
     }
     
-    // Add separator
+    // Add separator before options
     await createContextMenuItem({
       id: 'search-shortcuts-separator',
       parentId: 'search-shortcuts-parent',
@@ -165,7 +188,10 @@ chrome.commands.onCommand.addListener(async (command) => {
   if (command.startsWith('search-')) {
     const index = parseInt(command.replace('search-', '')) - 1;
     const searchEngines = await getSearchEngines();
-    const sortedEngines = searchEngines.sort((a, b) => (a.order || 0) - (b.order || 0));
+    // Filter out separators and sort
+    const sortedEngines = searchEngines
+      .filter(e => e.type !== 'separator')
+      .sort((a, b) => (a.order || 0) - (b.order || 0));
     const engine = sortedEngines[index];
     
     if (engine) {

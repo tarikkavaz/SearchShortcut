@@ -3,6 +3,7 @@
 const DEFAULT_SEARCH_ENGINES = [
   {
     id: 'youtube',
+    type: 'search',
     name: 'YouTube',
     url: 'https://www.youtube.com/results?search_query=%s',
     shortcut: '',
@@ -11,6 +12,7 @@ const DEFAULT_SEARCH_ENGINES = [
   },
   {
     id: 'google',
+    type: 'search',
     name: 'Google',
     url: 'https://www.google.com/search?q=%s',
     shortcut: '',
@@ -19,6 +21,7 @@ const DEFAULT_SEARCH_ENGINES = [
   },
   {
     id: 'imdb',
+    type: 'search',
     name: 'IMDb',
     url: 'http://www.imdb.com/find?s=all&q=%s',
     shortcut: '',
@@ -27,6 +30,7 @@ const DEFAULT_SEARCH_ENGINES = [
   },
   {
     id: 'wikipedia',
+    type: 'search',
     name: 'Wikipedia',
     url: 'https://en.wikipedia.org/wiki/Special:Search?search=%s',
     shortcut: '',
@@ -35,6 +39,7 @@ const DEFAULT_SEARCH_ENGINES = [
   },
   {
     id: 'duckduckgo',
+    type: 'search',
     name: 'DuckDuckGo',
     url: 'https://duckduckgo.com/?q=%s',
     shortcut: '',
@@ -103,8 +108,17 @@ async function getAllSettings() {
 // Import settings (for import)
 async function importSettings(settings) {
   if (settings.searchEngines && Array.isArray(settings.searchEngines)) {
+    // Ensure all items have a type field for backward compatibility
+    const normalizedEngines = settings.searchEngines.map(engine => {
+      if (!engine.type) {
+        // If no type, assume it's a search engine (old format)
+        engine.type = 'search';
+      }
+      return engine;
+    });
+    
     await chrome.storage.local.set({
-      searchEngines: settings.searchEngines,
+      searchEngines: normalizedEngines,
       globalSettings: settings.globalSettings || DEFAULT_SETTINGS.globalSettings
     });
   }
