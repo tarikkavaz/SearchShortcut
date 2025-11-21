@@ -190,17 +190,23 @@ function attachDragAndDrop() {
   });
 }
 
+let insertionPosition = null; // 'above' or 'below'
+
 function handleDragStart(e) {
   draggedElement = this;
   this.classList.add('dragging');
   e.dataTransfer.effectAllowed = 'move';
   e.dataTransfer.setData('text/html', this.innerHTML);
+  insertionPosition = null;
 }
 
 function handleDragEnd(e) {
   this.classList.remove('dragging');
   const items = enginesList.querySelectorAll('.engine-item');
-  items.forEach(item => item.classList.remove('drag-over'));
+  items.forEach(item => {
+    item.classList.remove('drag-over-top', 'drag-over-bottom');
+  });
+  insertionPosition = null;
 }
 
 function handleDragOver(e) {
@@ -208,17 +214,48 @@ function handleDragOver(e) {
     e.preventDefault();
   }
   e.dataTransfer.dropEffect = 'move';
+  
+  if (this !== draggedElement) {
+    const rect = this.getBoundingClientRect();
+    const mouseY = e.clientY;
+    const itemCenterY = rect.top + rect.height / 2;
+    
+    // Determine if insertion should be above or below based on mouse position
+    const shouldInsertAbove = mouseY < itemCenterY;
+    
+    // Remove all drag-over classes first
+    const items = enginesList.querySelectorAll('.engine-item');
+    items.forEach(item => {
+      item.classList.remove('drag-over-top', 'drag-over-bottom');
+    });
+    
+    // Add the appropriate class
+    if (shouldInsertAbove) {
+      this.classList.add('drag-over-top');
+      insertionPosition = 'above';
+      this.dataset.insertPosition = 'above';
+    } else {
+      this.classList.add('drag-over-bottom');
+      insertionPosition = 'below';
+      this.dataset.insertPosition = 'below';
+    }
+  }
+  
   return false;
 }
 
 function handleDragEnter(e) {
   if (this !== draggedElement) {
-    this.classList.add('drag-over');
+    // Don't add classes here, let dragover handle it
   }
 }
 
 function handleDragLeave(e) {
-  this.classList.remove('drag-over');
+  // Only remove if we're actually leaving the element
+  // Check if relatedTarget is not a child of this element
+  if (!this.contains(e.relatedTarget)) {
+    this.classList.remove('drag-over-top', 'drag-over-bottom');
+  }
 }
 
 function handleDrop(e) {
@@ -233,9 +270,31 @@ function handleDrop(e) {
     const draggedIndex = searchEngines.findIndex(e => e.id === draggedId);
     const targetIndex = searchEngines.findIndex(e => e.id === targetId);
     
-    // Reorder array
+    // Determine insertion position
+    const insertAbove = insertionPosition === 'above' || this.dataset.insertPosition === 'above';
+    
+    // Remove dragged item first to simplify index calculations
     const [removed] = searchEngines.splice(draggedIndex, 1);
-    searchEngines.splice(targetIndex, 0, removed);
+    
+    // Calculate insertion index in the modified array (after removal)
+    let insertIndex;
+    if (draggedIndex < targetIndex) {
+      // Dragged item was before target, so target index decreased by 1
+      const newTargetIndex = targetIndex - 1;
+      insertIndex = insertAbove ? newTargetIndex : newTargetIndex + 1;
+    } else {
+      // Dragged item was after target, target index unchanged
+      insertIndex = insertAbove ? targetIndex : targetIndex + 1;
+    }
+    
+    // Clamp to valid array bounds
+    insertIndex = Math.max(0, Math.min(insertIndex, searchEngines.length));
+    
+    // Ensure insertIndex is within bounds
+    insertIndex = Math.max(0, Math.min(insertIndex, searchEngines.length));
+    
+    // Insert at calculated position
+    searchEngines.splice(insertIndex, 0, removed);
     
     // Update order values
     searchEngines.forEach((engine, index) => {
@@ -246,7 +305,14 @@ function handleDrop(e) {
     saveEngines();
   }
 
-  this.classList.remove('drag-over');
+  // Clean up
+  const items = enginesList.querySelectorAll('.engine-item');
+  items.forEach(item => {
+    item.classList.remove('drag-over-top', 'drag-over-bottom');
+    delete item.dataset.insertPosition;
+  });
+  insertionPosition = null;
+  
   return false;
 }
 
