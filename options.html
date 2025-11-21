@@ -1,95 +1,118 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-full">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Search Shortcuts - Settings</title>
   <link rel="stylesheet" href="options.css">
 </head>
-<body>
-  <div class="container">
-    <header>
-      <h1>Search Shortcuts Settings</h1>
-      <p class="subtitle">Manage your search engines and keyboard shortcuts</p>
-    </header>
-
-    <section class="global-settings">
-      <h2>Global Settings</h2>
-      <div class="setting-item">
-        <label>
-          <input type="radio" name="openMode" value="tab" id="openInTab" checked>
-          <span>Open in new tab</span>
-        </label>
-        <label>
-          <input type="radio" name="openMode" value="window" id="openInWindow">
-          <span>Open in new window</span>
-        </label>
-      </div>
-    </section>
-
-    <section class="search-engines">
-      <div class="section-header">
-        <h2>Search Engines</h2>
-        <div class="button-group">
-          <button id="addSeparatorBtn" class="btn btn-secondary">+ Add Separator</button>
-          <button id="addEngineBtn" class="btn btn-primary">+ Add Search Engine</button>
-        </div>
-      </div>
-
-      <div id="enginesList" class="engines-list">
-        <!-- Search engines will be dynamically added here -->
-      </div>
-    </section>
-
-    <section class="import-export">
-      <h2>Import / Export Settings</h2>
-      <div class="button-group">
-        <button id="exportBtn" class="btn btn-secondary">Export Settings</button>
-        <button id="importBtn" class="btn btn-secondary">Import Settings</button>
-        <input type="file" id="importFile" accept=".json" class="hidden-file-input">
-      </div>
-    </section>
-
-    <div id="engineModal" class="modal">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h3 id="modalTitle">Add Search Engine</h3>
-          <button class="modal-close" id="modalClose">&times;</button>
-        </div>
-        <div class="modal-body">
-          <form id="engineForm">
-            <div class="form-group">
-              <label for="engineName">Name</label>
-              <input type="text" id="engineName" required placeholder="e.g., YouTube">
+<body class="h-full">
+  <div class="min-h-full py-8 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-4xl mx-auto">
+      <!-- Header -->
+      <header class="mb-8">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <img src="icons/icon.png" alt="Search Shortcuts" class="header-logo">
+            <div>
+              <h1 class="text-3xl font-bold mb-2">Search Shortcuts</h1>
+              <p class="text-subtitle">Manage your search engines and keyboard shortcuts</p>
             </div>
-            <div class="form-group">
-              <label for="engineUrl">URL (use %s for query)</label>
-              <input type="text" id="engineUrl" required placeholder="https://www.youtube.com/results?search_query=%s">
-            </div>
-            <div class="form-group">
-              <label>Keyboard Shortcut</label>
-              <div id="shortcutInfo" class="shortcut-info">
-                <p class="shortcut-mapping"></p>
-                <small class="help-text shortcut-note">Shortcuts are fixed: Alt+Shift+1, Alt+Shift+2, Alt+Shift+3, Alt+Shift+4 map to the first 4 engines (by order).</small>
-                <small class="help-text shortcut-note">To customize shortcuts, go to <a href="#" id="shortcutsLink">chrome://extensions/shortcuts</a></small>
+          </div>
+          <button id="themeToggle" class="theme-toggle" aria-label="Toggle theme">
+            <svg id="themeIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- Global Settings -->
+      <section class="section-card">
+        <h2 class="section-title">Global Settings</h2>
+        <div class="global-settings-options">
+          <label class="radio-option">
+            <input type="radio" name="openMode" value="tab" id="openInTab" checked class="radio-input">
+            <span>Open in new tab</span>
+          </label>
+          <label class="radio-option">
+            <input type="radio" name="openMode" value="window" id="openInWindow" class="radio-input">
+            <span>Open in new window</span>
+          </label>
+        </div>
+        <div class="global-settings-divider"></div>
+        <div>
+          <h3 class="section-subtitle">Import / Export Settings</h3>
+          <div class="button-group">
+            <button id="exportBtn" class="btn btn-secondary">Export Settings</button>
+            <button id="importBtn" class="btn btn-secondary">Import Settings</button>
+            <input type="file" id="importFile" accept=".json" class="hidden">
+          </div>
+        </div>
+      </section>
+
+      <!-- Search Engines -->
+      <section class="section-card">
+        <div class="section-header">
+          <h2 class="section-title">Search Engines</h2>
+          <div class="button-group">
+            <button id="addSeparatorBtn" class="btn btn-secondary">+ Add Separator</button>
+            <button id="addEngineBtn" class="btn btn-primary">+ Add Search Engine</button>
+          </div>
+        </div>
+
+        <div id="enginesList" class="engines-list">
+          <!-- Search engines will be dynamically added here -->
+        </div>
+      </section>
+
+      <!-- Modal -->
+      <div id="engineModal" class="modal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3 id="modalTitle" class="modal-title">Add Search Engine</h3>
+            <button id="modalClose" class="modal-close">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form id="engineForm">
+              <div class="form-group">
+                <label for="engineName" class="form-label">Name</label>
+                <input type="text" id="engineName" required placeholder="e.g., YouTube" class="form-input">
               </div>
-            </div>
-            <div class="form-group checkbox-group">
-              <label>
-                <input type="checkbox" id="showInContextMenu" checked>
-                <span>Show in context menu</span>
-              </label>
-            </div>
-            <div class="form-actions">
-              <button type="button" id="cancelBtn" class="btn btn-secondary">Cancel</button>
-              <button type="submit" class="btn btn-primary">Save</button>
-            </div>
-          </form>
+              <div class="form-group">
+                <label for="engineUrl" class="form-label">URL (use %s for query)</label>
+                <input type="text" id="engineUrl" required placeholder="https://www.youtube.com/results?search_query=%s" class="form-input form-input-mono">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Keyboard Shortcut</label>
+                <div id="shortcutInfo" class="shortcut-info">
+                  <p class="shortcut-mapping"></p>
+                  <p class="help-text">Shortcuts are fixed: Alt+Shift+1, Alt+Shift+2, Alt+Shift+3, Alt+Shift+4 map to the first 4 engines (by order).</p>
+                  <p class="help-text">To customize shortcuts, go to <a href="#" id="shortcutsLink" class="link">chrome://extensions/shortcuts</a></p>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="checkbox-label">
+                  <input type="checkbox" id="showInContextMenu" checked class="checkbox-input">
+                  <span>Show in context menu</span>
+                </label>
+              </div>
+              <div class="form-actions">
+                <button type="button" id="cancelBtn" class="btn btn-secondary">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save</button>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div id="toast" class="toast"></div>
+      <!-- Toast -->
+      <div id="toast" class="toast"></div>
+    </div>
   </div>
 
   <script src="storage.js"></script>

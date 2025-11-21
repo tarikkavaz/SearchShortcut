@@ -51,6 +51,60 @@ function showToast(message, type = 'success') {
   }, 3000);
 }
 
+// Dark mode toggle
+function initTheme() {
+  const themeToggle = document.getElementById('themeToggle');
+  const themeIcon = document.getElementById('themeIcon');
+  const html = document.documentElement;
+  
+  // Check for saved theme preference or default to system preference
+  const savedTheme = localStorage.getItem('theme');
+  const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  
+  if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
+    html.classList.add('dark');
+    updateThemeIcon(true);
+  } else {
+    html.classList.remove('dark');
+    updateThemeIcon(false);
+  }
+  
+  // Listen for system theme changes
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+    if (!localStorage.getItem('theme')) {
+      if (e.matches) {
+        html.classList.add('dark');
+        updateThemeIcon(true);
+      } else {
+        html.classList.remove('dark');
+        updateThemeIcon(false);
+      }
+    }
+  });
+  
+  // Toggle theme on button click
+  if (themeToggle) {
+    themeToggle.addEventListener('click', () => {
+      const isDark = html.classList.toggle('dark');
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+      updateThemeIcon(isDark);
+    });
+  }
+}
+
+function updateThemeIcon(isDark) {
+  const themeIcon = document.getElementById('themeIcon');
+  if (themeIcon) {
+    if (isDark) {
+      // Moon icon (dark mode active, show sun)
+      themeIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>';
+    } else {
+      // Sun icon (light mode active, show moon)
+      themeIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>';
+    }
+  }
+}
+
 // Load and render search engines
 async function loadSearchEngines() {
   searchEngines = await getSearchEngines();
@@ -97,10 +151,10 @@ function renderEngines() {
           </div>
           <div class="engine-actions">
             <label>
-              <input type="checkbox" class="context-menu-toggle" data-engine-id="${item.id}" ${item.showInContextMenu !== false ? 'checked' : ''}>
+              <input type="checkbox" class="context-menu-toggle checkbox-input" data-engine-id="${item.id}" ${item.showInContextMenu !== false ? 'checked' : ''}>
               <span>Show in menu</span>
             </label>
-            <button class="btn btn-secondary edit-engine-btn" data-engine-id="${item.id}">Edit</button>
+            <button class="btn btn-edit edit-engine-btn" data-engine-id="${item.id}">Edit</button>
             <button class="btn btn-danger delete-engine-btn" data-engine-id="${item.id}">Delete</button>
           </div>
         </div>
@@ -314,12 +368,14 @@ function openModal(engine = null) {
   }
   
   updateShortcutMapping(engine ? engine.id : null);
+  engineModal.classList.remove('hidden');
   engineModal.classList.add('active');
   document.getElementById('engineName').focus();
 }
 
 // Close modal
 function closeModal() {
+  engineModal.classList.add('hidden');
   engineModal.classList.remove('active');
   editingEngineId = null;
   engineForm.reset();
@@ -435,7 +491,7 @@ async function loadGlobalSettings() {
 }
 
 // Save global settings
-async function saveGlobalSettings() {
+async function handleSaveGlobalSettings() {
   const settings = {
     openInNewTab: openInTab.checked
   };
@@ -514,8 +570,8 @@ engineForm.addEventListener('submit', async (e) => {
   await saveEngine(engineData);
 });
 
-openInTab.addEventListener('change', saveGlobalSettings);
-openInWindow.addEventListener('change', saveGlobalSettings);
+openInTab.addEventListener('change', handleSaveGlobalSettings);
+openInWindow.addEventListener('change', handleSaveGlobalSettings);
 exportBtn.addEventListener('click', exportSettings);
 importBtn.addEventListener('click', triggerImport);
 importFile.addEventListener('change', handleFileImport);
@@ -529,6 +585,7 @@ engineModal.addEventListener('click', (e) => {
 
 // Initialize
 (async () => {
+  initTheme();
   await loadSearchEngines();
   await loadGlobalSettings();
 })();
